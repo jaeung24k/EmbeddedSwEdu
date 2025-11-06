@@ -7,6 +7,8 @@
 #include "IfxVadc_reg.h"
 #include "IfxGtm_reg.h"
 
+#include "driver.h"
+
 
 // Port registers
 #define PC1_BIT_LSB_IDX         11
@@ -94,8 +96,6 @@ IfxCpu_syncEvent g_cpuSyncEvent = 0;
 
 void initLED(void);
 void initPWMLED(void);
-void initButton(void);
-void initERU(void);
 void initCCU60(void);
 void initRGBLED(void);
 void initVADC(void);
@@ -136,14 +136,14 @@ int core0_main(void)
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
 
-    //initERU();
+    initERU();
     initCCU60();
     //initLED();
     initPWMLED();
     initRGBLED();
     initVADC();
     initGTM();
-    //initButton();
+    initButton();
 
 
     // trigger update request signal
@@ -164,7 +164,7 @@ int core0_main(void)
             P10_OUT.U &= ~(0x1 << P3_BIT_LSB_IDX);
 
 
-            GTM_TOM0_CH1_SR1.U = 0; // PWM duty ¼³Á¤ (LED ¹à±â Á¶Á¤)
+            GTM_TOM0_CH1_SR1.U = 0; // PWM duty ï¿½ï¿½ï¿½ï¿½ (LED ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         }
         else if( adcResult >= 2048 )
         {
@@ -173,7 +173,7 @@ int core0_main(void)
             P10_OUT.U &= ~(0x1 << P3_BIT_LSB_IDX);
 
 
-            GTM_TOM0_CH1_SR1.U = 1000; // PWM duty ¼³Á¤ (LED ¹à±â Á¶Á¤)
+            GTM_TOM0_CH1_SR1.U = 1000; // PWM duty ï¿½ï¿½ï¿½ï¿½ (LED ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         }
         else if( adcResult >= 1024 )
         {
@@ -182,7 +182,7 @@ int core0_main(void)
             P10_OUT.U |= 0x1 << P3_BIT_LSB_IDX;
 
 
-            GTM_TOM0_CH1_SR1.U = 7000; // PWM duty ¼³Á¤ (LED ¹à±â Á¶Á¤)
+            GTM_TOM0_CH1_SR1.U = 7000; // PWM duty ï¿½ï¿½ï¿½ï¿½ (LED ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         }
         else
         {
@@ -191,7 +191,7 @@ int core0_main(void)
             P10_OUT.U |= 0x1 << P3_BIT_LSB_IDX;
 
 
-            GTM_TOM0_CH1_SR1.U = 12500; // PWM duty ¼³Á¤ (¹à±â Á¶Á¤)
+            GTM_TOM0_CH1_SR1.U = 12500; // PWM duty ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         }
 
 
@@ -226,45 +226,8 @@ void initPWMLED(void)
 
 
 
-void initButton(void)
-{
-    P02_IOCR0.U &= ~(0x1F << PC1_BIT_LSB_IDX);       // reset P02_IOCR0 PC1
 
 
-    P02_IOCR0.U |= 0x02 << PC1_BIT_LSB_IDX;          // set P02.1 general input (pull-up connected)
-}
-
-
-void initERU(void)
-{
-    // ERU setting
-    SCU_EICR1.U &= ~(0x7 << EXIS0_BIT_LSB_IDX);
-    SCU_EICR1.U |= (0x1  << EXIS0_BIT_LSB_IDX);
-
-
-    SCU_EICR1.U |= 0x1   << FEN0_BIT_LSB_IDX;
-
-
-    SCU_EICR1.U |= 0x1   << EIEN0_BIT_LSB_IDX;
-
-
-    SCU_EICR1.U &= ~(0x7 << INP0_BIT_LSB_IDX);
-
-
-    SCU_IGCR0.U &= ~(0x3 << IGP0_BIT_LSB_IDX);
-    SCU_IGCR0.U |= 0x1   << IGP0_BIT_LSB_IDX;
-
-
-    // SRC Interrupt setting
-    SRC_SCU_SCU_ERU0.U &= ~(0xFF << SRPN_BIT_LSB_IDX);
-    SRC_SCU_SCU_ERU0.U |= 0x0A   << SRPN_BIT_LSB_IDX;
-
-
-    SRC_SCU_SCU_ERU0.U &= ~(0x3  << TOS_BIT_LSB_IDX);
-
-
-    SRC_SCU_SCU_ERU0.U |= 1      << SRE_BIT_LSB_IDX;
-}
 
 
 void initCCU60(void)
