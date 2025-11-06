@@ -72,8 +72,6 @@
 #define DISS_BIT_LSB_IDX            1
 #define DISR_BIT_LSB_IDX            0
 #define SEL7_BIT_LSB_IDX            14
-#define SEL9_BIT_LSB_IDX            18
-#define SEL11_BIT_LSB_IDX           22
 #define EN_FXCLK_BIT_LSB_IDX        22
 #define FXCLK_SEL_BIT_LSB_IDX       0
 
@@ -83,9 +81,9 @@
 #define HOST_TRIG_BIT_LSB_IDX       0
 #define ENDIS_CTRL1_BIT_LSB_IDX     2
 #define OUTEN_CTRL1_BIT_LSB_IDX     2
-#define RSCNT0_CN1_BIT_LSB_IDX      18
-#define FUPD_CTRL1_BIT_LSB_IDX      2
 #define CLK_SRC_SR_BIT_LSB_IDX      12
+#define OSM_BIT_LSB_IDX             26
+#define TRIGOUT_BIT_LSB_IDX         24
 #define SL_BIT_LSB_IDX              11
 
 
@@ -95,6 +93,7 @@ IfxCpu_syncEvent g_cpuSyncEvent = 0;
 
 
 void initLED(void);
+void initPWMLED(void);
 void initButton(void);
 void initERU(void);
 void initCCU60(void);
@@ -103,8 +102,6 @@ void initVADC(void);
 void VADC_startConversion(void);
 unsigned int VADC_readResult(void);
 void initGTM(void);
-void RGBLED_brigthness(unsigned int duty);
-void initBuzzer(void);
 
 
 
@@ -141,68 +138,61 @@ int core0_main(void)
 
     //initERU();
     initCCU60();
-    initLED();
+    //initLED();
+    initPWMLED();
     initRGBLED();
-//    initVADC();
-    initBuzzer();
+    initVADC();
     initGTM();
     //initButton();
 
 
-    GTM_TOM0_TGC0_GLB_CTRL.U |= 0x1 << HOST_TRIG_BIT_LSB_IDX;       // trigger update request signal
-    GTM_TOM0_TGC1_GLB_CTRL.U |= 0x1 << HOST_TRIG_BIT_LSB_IDX;       // trigger update request signal
-
-
-    // from 3 octave C ~ 4 octave C {C, D, E, F, G, A, B, C}
-    unsigned int duty[8] = {130, 146, 164, 174, 195, 220, 246, 262};
+    // trigger update request signal
+    GTM_TOM0_TGC0_GLB_CTRL.U |= 0x1 << HOST_TRIG_BIT_LSB_IDX;
 
 
     while(1)
     {
+        VADC_startConversion();
+        unsigned int adcResult = VADC_readResult();
+        for(unsigned int i = 0; i < 100; i++);
 
 
-        for(unsigned int i = 0; i < 100000000; i++);
-        GTM_TOM0_CH11_SR0.B.SR0 = 6250000 / duty[0];
-        GTM_TOM0_CH11_SR1.B.SR1 = 3125000 / duty[0];
+        if( adcResult >= 3096 )
+        {
+            P02_OUT.U |= 0x1 << P7_BIT_LSB_IDX;
+            P10_OUT.U &= ~(0x1 << P5_BIT_LSB_IDX);
+            P10_OUT.U &= ~(0x1 << P3_BIT_LSB_IDX);
 
 
-        for(unsigned int i = 0; i < 100000000; i++);
-        GTM_TOM0_CH11_SR0.B.SR0 = 6250000 / duty[1];
-        GTM_TOM0_CH11_SR1.B.SR1 = 3125000 / duty[1];
+            GTM_TOM0_CH1_SR1.U = 0; // PWM duty 설정 (LED 밝기 조정)
+        }
+        else if( adcResult >= 2048 )
+        {
+            P02_OUT.U &= ~(0x1 << P7_BIT_LSB_IDX);
+            P10_OUT.U |= 0x1 << P5_BIT_LSB_IDX;
+            P10_OUT.U &= ~(0x1 << P3_BIT_LSB_IDX);
 
 
-        for(unsigned int i = 0; i < 100000000; i++);
-        GTM_TOM0_CH11_SR0.B.SR0 = 6250000 / duty[2];
-        GTM_TOM0_CH11_SR1.B.SR1 = 3125000 / duty[2];
+            GTM_TOM0_CH1_SR1.U = 1000; // PWM duty 설정 (LED 밝기 조정)
+        }
+        else if( adcResult >= 1024 )
+        {
+            P02_OUT.U &= ~(0x1 << P7_BIT_LSB_IDX);
+            P10_OUT.U &= ~(0x1 << P5_BIT_LSB_IDX);
+            P10_OUT.U |= 0x1 << P3_BIT_LSB_IDX;
 
 
-        for(unsigned int i = 0; i < 100000000; i++);
-        GTM_TOM0_CH11_SR0.B.SR0 = 6250000 / duty[3];
-        GTM_TOM0_CH11_SR1.B.SR1 = 3125000 / duty[3];
+            GTM_TOM0_CH1_SR1.U = 7000; // PWM duty 설정 (LED 밝기 조정)
+        }
+        else
+        {
+            P02_OUT.U |= 0x1 << P7_BIT_LSB_IDX;
+            P10_OUT.U |= 0x1 << P5_BIT_LSB_IDX;
+            P10_OUT.U |= 0x1 << P3_BIT_LSB_IDX;
 
 
-        for(unsigned int i = 0; i < 100000000; i++);
-        GTM_TOM0_CH11_SR0.B.SR0 = 6250000 / duty[4];
-        GTM_TOM0_CH11_SR1.B.SR1 = 3125000 / duty[4];
-
-
-        for(unsigned int i = 0; i < 100000000; i++);
-        GTM_TOM0_CH11_SR0.B.SR0 = 6250000 / duty[5];
-        GTM_TOM0_CH11_SR1.B.SR1 = 3125000 / duty[5];
-
-
-        for(unsigned int i = 0; i < 100000000; i++);
-        GTM_TOM0_CH11_SR0.B.SR0 = 6250000 / duty[6];
-        GTM_TOM0_CH11_SR1.B.SR1 = 3125000 / duty[6];
-
-
-        for(unsigned int i = 0; i < 100000000; i++);
-        GTM_TOM0_CH11_SR0.B.SR0 = 6250000 / duty[7];
-        GTM_TOM0_CH11_SR1.B.SR1 = 3125000 / duty[7];
-
-
-
-
+            GTM_TOM0_CH1_SR1.U = 12500; // PWM duty 설정 (밝기 조정)
+        }
 
 
     }
@@ -216,9 +206,24 @@ void initLED(void)
     P10_IOCR0.U &= ~(0x1F << PC2_BIT_LSB_IDX);     // reset P10_IOCR0 PC2
 
 
-    P10_IOCR0.U |= 0x11 << PC1_BIT_LSB_IDX;        // set P10.1 GTM Output
+    P10_IOCR0.U |= 0x10 << PC1_BIT_LSB_IDX;        // set P10.1 push-pull general output
     P10_IOCR0.U |= 0x10 << PC2_BIT_LSB_IDX;        // set P10.2 push-pull general output
 }
+
+
+
+
+void initPWMLED(void)
+{
+    P10_IOCR0.U &= ~(0x1F << PC1_BIT_LSB_IDX);     // reset P10_IOCR0 PC1
+    P10_IOCR0.U &= ~(0x1F << PC2_BIT_LSB_IDX);     // reset P10_IOCR0 PC2
+
+
+    P10_IOCR0.U |= 0x11 << PC1_BIT_LSB_IDX;        // set P10.1 GTM Out, (PWM Generation)
+    P10_IOCR0.U |= 0x10 << PC2_BIT_LSB_IDX;        // set P10.2 push-pull general output
+}
+
+
 
 
 void initButton(void)
@@ -346,9 +351,9 @@ void initRGBLED(void)
 
 
     // set Port as general purpose output (push-pull)
-    P02_IOCR4.U |= 0x11 << PC7_BIT_LSB_IDX;
-    P10_IOCR4.U |= 0x11 << PC5_BIT_LSB_IDX;
-    P10_IOCR0.U |= 0x11 << PC3_BIT_LSB_IDX;
+    P02_IOCR4.U |= 0x10 << PC7_BIT_LSB_IDX;
+    P10_IOCR4.U |= 0x10 << PC5_BIT_LSB_IDX;
+    P10_IOCR0.U |= 0x10 << PC3_BIT_LSB_IDX;
 }
 
 
@@ -433,6 +438,8 @@ unsigned int VADC_readResult(void)
 }
 
 
+
+
 void initGTM(void)
 {
     // Password Access to unlock SCU_WDTSCON0
@@ -468,123 +475,28 @@ void initGTM(void)
     GTM_CMU_CLK_EN.U |= 0x2 << EN_FXCLK_BIT_LSB_IDX;        // enable all CMU_FXCLK
 
 
-    // set TGC0 to enable GTM TOM0 channel 1
-    GTM_TOM0_TGC0_GLB_CTRL.U |= 0x2 << UPEN_CTRL1_BIT_LSB_IDX;  // TOM channel 1 enable
+    // GTM TOM0 PWM configuration
+    GTM_TOM0_TGC0_GLB_CTRL.U |= 0x2 << UPEN_CTRL1_BIT_LSB_IDX;      // TOM channel 1 update enable
+
+
     GTM_TOM0_TGC0_ENDIS_CTRL.U |= 0x2 << ENDIS_CTRL1_BIT_LSB_IDX;   // enable channel 1 on update trigger
+
+
     GTM_TOM0_TGC0_OUTEN_CTRL.U |= 0x2 << OUTEN_CTRL1_BIT_LSB_IDX;   // enable channel 1 output on update trigger
 
 
-
-
-    // set TGC0 to enable GTM TOM0 channel 2, 3, 15
-    GTM_TOM0_TGC0_GLB_CTRL.B.UPEN_CTRL2 |= 0x2;  // TOM0 channel 2 enable
-    GTM_TOM0_TGC0_GLB_CTRL.B.UPEN_CTRL3 |= 0x2;  // TOM0 channel 3 enable
-    GTM_TOM0_TGC1_GLB_CTRL.B.UPEN_CTRL7 |= 0x2;  // TOM0 channel 15 enable
-
-
-    GTM_TOM0_TGC0_ENDIS_CTRL.B.ENDIS_CTRL2 |= 0x2;   // enable channel 2 on update trigger
-    GTM_TOM0_TGC0_ENDIS_CTRL.B.ENDIS_CTRL3 |= 0x2;   // enable channel 3 on update trigger
-    GTM_TOM0_TGC1_ENDIS_CTRL.B.ENDIS_CTRL7 |= 0x2;   // enable channel 15 on update trigger
-
-
-    GTM_TOM0_TGC0_OUTEN_CTRL.B.OUTEN_CTRL2 |= 0x2;   // enable channel 2 output on update trigger
-    GTM_TOM0_TGC0_OUTEN_CTRL.B.OUTEN_CTRL3 |= 0x2;   // enable channel 3 output on update trigger
-    GTM_TOM0_TGC1_OUTEN_CTRL.B.OUTEN_CTRL7 |= 0x2;   // enable channel 15 output on update trigger
-
-
-
-
-    // TOM 0_1
     GTM_TOM0_CH1_CTRL.U |= 0x1 << SL_BIT_LSB_IDX;                   // high signal level for duty cycle
+    GTM_TOM0_CH1_CTRL.U |= 0x1 << CLK_SRC_SR_BIT_LSB_IDX;           // clock source --> CMU_FXCLK(1) = 3125 kHz
+    GTM_TOM0_CH1_CTRL.U &= ~(0x1 << OSM_BIT_LSB_IDX);               // continuous mode enable
+    GTM_TOM0_CH1_CTRL.U &= ~(0x1 << TRIGOUT_BIT_LSB_IDX);           // TRIG[x] = TRIG[x-1]
 
 
-    GTM_TOM0_CH1_CTRL.U &= ~(0x7 << CLK_SRC_SR_BIT_LSB_IDX);
-    GTM_TOM0_CH1_CTRL.U |= 0x1 << CLK_SRC_SR_BIT_LSB_IDX;           // clock source --> CMU_FXCLK(1) = 6250 kHz
+    GTM_TOM0_CH1_SR0.U = 12500 - 1;                                 // PWM freq. = 3125 kHz / 12500 = 250 kHz
 
 
-    GTM_TOM0_CH1_SR0.U = 12500 - 1;                                 // PWM freq. = 6250 kHz / 12500 = 250 kHz
     GTM_TOM0_CH1_SR1.U = 1250 - 1;                                  // duty cycle = 6250 / 12500 = 50 %
 
 
-    // TOM 0_2
-    GTM_TOM0_CH2_CTRL.U |= 0x1 << SL_BIT_LSB_IDX;                   // high signal level for duty cycle
-
-
-    GTM_TOM0_CH2_CTRL.U &= ~(0x7 << CLK_SRC_SR_BIT_LSB_IDX);
-    GTM_TOM0_CH2_CTRL.U |= 0x1 << CLK_SRC_SR_BIT_LSB_IDX;           // clock source --> CMU_FXCLK(1) = 6250 kHz
-
-
-    GTM_TOM0_CH2_SR0.U = 12500 - 1;                                 // PWM freq. = 6250 kHz / 12500 = 250 kHz
-    //GTM_TOM0_CH2_SR1.U = 12500 - 1;                               // duty cycle = 6250 / 12500 = 50 %
-
-
-    // TOM 0_3
-    GTM_TOM0_CH3_CTRL.U |= 0x1 << SL_BIT_LSB_IDX;                   // high signal level for duty cycle
-
-
-    GTM_TOM0_CH3_CTRL.U &= ~(0x7 << CLK_SRC_SR_BIT_LSB_IDX);
-    GTM_TOM0_CH3_CTRL.U |= 0x1 << CLK_SRC_SR_BIT_LSB_IDX;           // clock source --> CMU_FXCLK(1) = 6250 kHz
-
-
-    GTM_TOM0_CH3_SR0.U = 12500 - 1;                                 // PWM freq. = 6250 kHz / 12500 = 250 kHz
-    //GTM_TOM0_CH3_SR1.U = 125 - 1;                                 // duty cycle = 6250 / 12500 = 50 %
-
-
-    // TOM 0_15
-    GTM_TOM0_CH15_CTRL.B.SL |= 0x1;                                 // high signal level for duty cycle
-    GTM_TOM0_CH15_CTRL.B.CLK_SRC_SR |= 0x1;                         // clock source --> CMU_FXCLK(1) = 6250 kHz
-
-
-    GTM_TOM0_CH15_SR0.U = 12500 - 1;                                // PWM freq. = 6250 kHz / 12500 = 250 kHz
-    //GTM_TOM0_CH15_SR1.U = 125 - 1;                                // duty cycle = 6250 / 12500 = 50 %
-
-
-
-
-    // TOUT pin selection
-    GTM_TOUTSEL6.U &= ~(0x3 << SEL7_BIT_LSB_IDX);                   // TOUT103  --> TOM0 channel 1
-    GTM_TOUTSEL0.U &= ~(0x3 << SEL7_BIT_LSB_IDX);                   // TOUT7    --> TOM0 channel 15
-    GTM_TOUTSEL6.U &= ~(0x3 << SEL11_BIT_LSB_IDX);                  // TOUT103  --> TOM0 channel 2
-    GTM_TOUTSEL6.U &= ~(0x3 << SEL9_BIT_LSB_IDX);                   // TOUT105  --> TOM0 channel 3
-
-
-
-
-
-
-
-
-
-
-    // set GTM TOM0 channel 11 - Buzzer
-    GTM_TOM0_TGC1_GLB_CTRL.B.UPEN_CTRL3     |= 0x2;                   // TOM0 channel 11 enable
-    GTM_TOM0_TGC1_ENDIS_CTRL.B.ENDIS_CTRL3  |= 0x2;                   // enable channel 11 on update trigger
-    GTM_TOM0_TGC1_OUTEN_CTRL.B.OUTEN_CTRL3  |= 0x2;                   // enable channel 11 output on update trigger
-
-
-
-
-    // TOM 0_11
-    GTM_TOM0_CH11_CTRL.B.SL = 0x1;                                  // high signal level for duty cycle
-    GTM_TOM0_CH11_CTRL.B.CLK_SRC_SR = 0x1;                          // clock source --> CMU_FXCLK(1) = 6250 kHz
-    GTM_TOM0_CH11_SR0.B.SR0 = 12500 - 1;                            // PWM freq. = 6250 kHz / 12500 = 500 Hz
-    GTM_TOM0_CH11_SR1.B.SR1 = 6250 - 1;                             // duty cycle = 6250 / 12500 = 50 %
-
-
-    // TOUT pin selection
-    GTM_TOUTSEL0.B.SEL3 = 0x0;                                      // TOUT3  --> TOM0 channel 11
-}
-
-
-void RGBLED_brigthness(unsigned int duty)
-{
-    GTM_TOM0_CH2_SR1.U = duty;
-    GTM_TOM0_CH3_SR1.U = duty;
-    GTM_TOM0_CH15_SR1.U = duty;
-}
-
-
-void initBuzzer(void)
-{
-    P02_IOCR0.B.PC3 = 0x11;
+    GTM_TOUTSEL6.U &= ~(0x3 << SEL7_BIT_LSB_IDX);                   // TOUT103 --> TOM0 channel 1
+                                                                    // 103 = 16 * 6 + 7
 }
