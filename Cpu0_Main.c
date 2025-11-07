@@ -31,6 +31,7 @@ IfxCpu_syncEvent g_cpuSyncEvent = 0;
 unsigned int range;
 unsigned char range_valid_flag = 0;
 extern unsigned int CollisionDistance_CM;
+extern unsigned int CollisionAlert;
 
 __interrupt(0x0A) __vector_table(2)
 void ERU0_ISR(void)
@@ -103,6 +104,28 @@ int core0_main(void)
     while(1)
     {
         swdelay(10000000);
+
+        if (CollisionAlert == 1) {
+            // 느리게 깜빡임
+            for(unsigned int i = 0; i < 255; i++) {
+                if(i % 51 == 0) {
+                    P02_OUT.U |=  (0x1 << P7_BIT_LSB_IDX);
+                } else {
+                    P02_OUT.U &= ~(0x1 << P7_BIT_LSB_IDX);
+                }
+                swdelay(1000000);
+            }
+        } else if (CollisionAlert == 2) {
+            // 빠르게 깜빡임
+            for(unsigned int i = 0; i < 255; i++) {
+                if(i % 5 == 0) {
+                    P02_OUT.U |=  (0x1 << P7_BIT_LSB_IDX);
+                } else {
+                    P02_OUT.U &= ~(0x1 << P7_BIT_LSB_IDX);
+                }
+                swdelay(1000000);
+            }
+        }
 
         // // drive TRIG with high (P02.6)
         // p02_6_out_set();

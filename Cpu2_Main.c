@@ -63,13 +63,13 @@ int core2_main(void)
         while( range_valid_flag == 0);
 
         CollisionDistance_CM = range;
-        if (CollisionDistance_CM < 60) {
+        if (CollisionDistance_CM < 30) {
             // The distance to the car in front is less than 60 cm.
-            CollisionAlert = 1;
-        }
-        else if (CollisionDistance_CM < 30) {
-            // The distance to the car in front is less than 30 cm.
             CollisionAlert = 2;
+        }
+        else if (CollisionDistance_CM < 60) {
+            // The distance to the car in front is less than 30 cm.
+            CollisionAlert = 1;
         }
         else {
             // 
@@ -77,15 +77,15 @@ int core2_main(void)
         }
 
 
-        if(        range >= 60) {
-            on_rgb_red();
-        } else if( range >= 40) {
-            on_rgb_green();
-        } else if( range >= 20) {
-            on_rgb_blue();
-        } else {
-            on_rgb_white();
-        }
+        // if(        range >= 60) {
+        //     on_rgb_red();
+        // } else if( range >= 40) {
+        //     on_rgb_green();
+        // } else if( range >= 20) {
+        //     on_rgb_blue();
+        // } else {
+        //     on_rgb_white();
+        // }
     }
     return (1);
 }
