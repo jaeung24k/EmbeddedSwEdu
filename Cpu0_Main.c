@@ -28,6 +28,7 @@
 
 IfxCpu_syncEvent g_cpuSyncEvent = 0;
 
+unsigned char gInitDone = 0;
 unsigned int range;
 unsigned char range_valid_flag = 0;
 extern unsigned int CollisionDistance_CM;
@@ -96,7 +97,7 @@ int core0_main(void)
     //initERU_SW2();  // P02.1 --> using external interrupt
     initCCU60();      // using CCU60's T12 timer to Call ISR on 10us
     initRGBLED();     // RGB LED drive
-    //initVADC_G4CH7(); // ADC conversion using VADC for G4, CH7 (connected to potentionmeter)
+    initVADC_G4CH7(); // ADC conversion using VADC for G4, CH7 (connected to potentionmeter)
     //initPWMLED();     // drive P10.1 using GTM (P10.1 red LED can't be used as GPIO)
     //initGTM();        // configure GTM unit
 
@@ -106,6 +107,7 @@ int core0_main(void)
     initUSonic();     // P02.6 Triger Signal Generation
                       // P00.4 Echo Receive by External Interrupt using ERU
 
+    gInitDone = 1;
     while(1)
     {
         if (gCnt % 10000 == 0)

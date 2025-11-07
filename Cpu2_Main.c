@@ -32,6 +32,7 @@ unsigned int CollisionAlert = 0;        // 0: Safe, 1: Distance below 60cm, 2: D
 extern unsigned int range;
 extern unsigned char range_valid_flag;
 extern IfxCpu_syncEvent g_cpuSyncEvent;
+extern unsigned char gInitDone;
 
 void CPU2_T_1000ms(void);
 void CPU2_T_100ms(void);

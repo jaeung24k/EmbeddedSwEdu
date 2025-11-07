@@ -38,10 +38,15 @@ extern IfxCpu_syncEvent g_cpuSyncEvent;
 
 extern void toggle_red_led(void);
 extern void toggle_blue_led(void);
+extern void CalculateCarSpeed(void);
+extern void ReadSteeringAngle(void);
 
 unsigned int Speed_L = 0;
 unsigned int Speed_R = 0;
+unsigned int SteeringAngle = 0;
 
+
+extern unsigned char gInitDone;
 int core1_main(void)
 {
     unsigned int gCnt = 0;
@@ -96,6 +101,21 @@ void CPU1_T_1000ms(void)
 
 void CPU1_T_100ms(void)
 {
+    ReadSteeringAngle();
+    CalculateCarSpeed();
+}
+
+void CPU1_T_10ms(void)
+{
+    if (gInitDone == 1)
+    {
+        bAccelPressed = read_switch1();
+        bBreakPressed = read_switch2();
+    }
+}
+
+void CalculateCarSpeed(void)
+{
     if (bBreakPressed == 1)
     {
         if (Speed_L != 0)
@@ -115,11 +135,29 @@ void CPU1_T_100ms(void)
         else
             Speed_R += 1;
     }
-
 }
 
-void CPU1_T_10ms(void)
+void ReadSteeringAngle(void)
 {
-    bAccelPressed = read_switch1();
-    bBreakPressed = read_switch2();
+    unsigned int adc_data = 0;
+
+    if (gInitDone == 1)
+    {
+        VADC_G4CH7_sampling();
+        adc_data = VADC_G4CH7_read();
+        /**********************************************************************
+         * 
+         * Valid range of Variable Register  \  |  /
+         *                                   |  |  |
+         *                                 0   700  1400
+         *                                 |    |    |
+         *                                 V    V    V 
+         *                                 0    30   60  [degree from center]
+         * 
+         ***********************************************************************/
+        if(adc_data > 1400)
+            adc_data = 1400;
+        
+        SteeringAngle = (((adc_data) * 60) / 1400);
+    }
 }
