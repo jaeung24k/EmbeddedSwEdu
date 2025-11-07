@@ -27,7 +27,6 @@
 #include "HYUNDAI_RESKILL.h"
 
 IfxCpu_syncEvent g_cpuSyncEvent = 0;
-
 unsigned char gInitDone = 0;
 unsigned int range;
 unsigned char range_valid_flag = 0;
@@ -37,6 +36,7 @@ extern unsigned int CollisionAlert;
 void CPU0_T_1000ms(void);
 void CPU0_T_100ms(void);
 void CPU0_T_10ms(void);
+void blinkRGBLED(void);
 
 __interrupt(0x0A) __vector_table(2)
 void ERU0_ISR(void)
@@ -106,7 +106,6 @@ int core0_main(void)
                       //  -> start counter on ECHO rise edge, and stop on ECHO fall edge
     initUSonic();     // P02.6 Triger Signal Generation
                       // P00.4 Echo Receive by External Interrupt using ERU
-
     gInitDone = 1;
     while(1)
     {
@@ -125,29 +124,6 @@ int core0_main(void)
         
         gCnt += 1;
 
-        swdelay(10000000);
-
-        if (CollisionAlert == 1) {
-            // 느리게 깜빡임
-            for(unsigned int i = 0; i < 255; i++) {
-                if(i % 51 == 0) {
-                    P02_OUT.U |=  (0x1 << P7_BIT_LSB_IDX);
-                } else {
-                    P02_OUT.U &= ~(0x1 << P7_BIT_LSB_IDX);
-                }
-                swdelay(1000000);
-            }
-        } else if (CollisionAlert == 2) {
-            // 빠르게 깜빡임
-            for(unsigned int i = 0; i < 255; i++) {
-                if(i % 5 == 0) {
-                    P02_OUT.U |=  (0x1 << P7_BIT_LSB_IDX);
-                } else {
-                    P02_OUT.U &= ~(0x1 << P7_BIT_LSB_IDX);
-                }
-                swdelay(1000000);
-            }
-        }
 
         // // drive TRIG with high (P02.6)
         // p02_6_out_set();
@@ -175,17 +151,17 @@ int core0_main(void)
 
 void CPU0_T_1000ms(void)
 {
-    toggle_red_led();
+    blinkRGBLED();
 }
 
 void CPU0_T_100ms(void)
 {
-    toggle_blue_led();
+
 }
 
 void CPU0_T_10ms(void)
 {
-    
+
 }
 
 void initLED(void)
@@ -398,3 +374,32 @@ void initCCU61(void)
 
 }
 
+void blinkRGBLED(void)
+{
+    if (CollisionAlert == 1) {
+        // 느린점등
+        static unsigned int gCnt_1 = 0;
+        if (gCnt_1 % 20 <= 10){
+            on_rgb_red();
+        }
+        else {
+            P02_OUT.U &= ~(0x1 << P7_BIT_LSB_IDX); // R OFF
+            P10_OUT.U &= ~(0x1 << P5_BIT_LSB_IDX); // G ON
+            P10_OUT.U &= ~(0x1 << P3_BIT_LSB_IDX); // B OFF
+        }
+        gCnt_1++;
+    }
+    else if (CollisionAlert == 2) {
+        // 빠른 점등
+        static unsigned int gCnt_2 = 0;
+        if (gCnt_2 % 10 == 0){
+            on_rgb_red();
+        }
+        else {
+            P02_OUT.U &= ~(0x1 << P7_BIT_LSB_IDX); // R OFF
+            P10_OUT.U &= ~(0x1 << P5_BIT_LSB_IDX); // G ON
+            P10_OUT.U &= ~(0x1 << P3_BIT_LSB_IDX); // B OFF
+        }
+        gCnt_2++;
+    }
+}
