@@ -30,8 +30,9 @@ IfxCpu_syncEvent g_cpuSyncEvent = 0;
 
 unsigned int range;
 unsigned char range_valid_flag = 0;
+extern unsigned int CollisionDistance_CM;
 
-__interrupt(0x0A) __vector_table(0)
+__interrupt(0x0A) __vector_table(2)
 void ERU0_ISR(void)
 {
     // rising P00.4 (ECHO)
@@ -52,6 +53,7 @@ void ERU0_ISR(void)
 
         // (1 / t_freq) * counter * 1000000 / 58  =  centimeter
         range = ((CCU61_T12.B.T12CV * 1000000) / 48828) / 58;
+        CollisionDistance_CM = range;
         range_valid_flag = 1;
 
         ccu61_counter_reset();
@@ -59,7 +61,7 @@ void ERU0_ISR(void)
 }
 
 // ISR Call on 10us
-__interrupt(0x0B) __vector_table(0)
+__interrupt(0x0B) __vector_table(2)
 void CCU60_T12_ISR(void)
 {
     // end of 10us
@@ -102,25 +104,25 @@ int core0_main(void)
     {
         swdelay(10000000);
 
-        // drive TRIG with high (P02.6)
-        p02_6_out_set();
+        // // drive TRIG with high (P02.6)
+        // p02_6_out_set();
 
-        // timer T12 start on CCU60
-        ccu60_t12_start();
+        // // timer T12 start on CCU60
+        // ccu60_t12_start();
 
-        // wait until receive ECHO
-        while( range_valid_flag == 0);
+        // // wait until receive ECHO
+        // while( range_valid_flag == 0);
 
 
-        if(        range >= 60) {
-            on_rgb_red();
-        } else if( range >= 40) {
-            on_rgb_green();
-        } else if( range >= 20) {
-            on_rgb_blue();
-        } else {
-            on_rgb_white();
-        }
+        // if(        range >= 60) {
+        //     on_rgb_red();
+        // } else if( range >= 40) {
+        //     on_rgb_green();
+        // } else if( range >= 20) {
+        //     on_rgb_blue();
+        // } else {
+        //     on_rgb_white();
+        // }
     }
 
     return (1);
@@ -138,36 +140,36 @@ void initButton(void)
 }
 
 void initERU_SW2(void) {
-    // ERUÈ¸·Î ³»ºÎÀÇ ERS2È¸·Î ÀÔ·Â 4°³Áß¿¡ P02.1À» ¼±ÅÃ
+    // ERUÈ¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ERS2È¸ï¿½ï¿½ ï¿½Ô·ï¿½ 4ï¿½ï¿½ï¿½ß¿ï¿½ P02.1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     eru0_esr2_input_sel(1);
 
     // falling edge and rise edge enable
     eru0_etl_edge_sel(1, 1);
 
-    // OGU0¸¦ »ç¿ë
+    // OGU0ï¿½ï¿½ ï¿½ï¿½ï¿½
     eru0_ogu0_enable();
 
-    // ÀÎÅÍ·´Æ® ¿ì¼±¼øÀ§ ¹× ID¼³Á¤.
-    eru0_int_config(0x0A, 0);
+    // ï¿½ï¿½ï¿½Í·ï¿½Æ® ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ IDï¿½ï¿½ï¿½ï¿½.
+    eru0_int_config(0x0A, 2);
 
-    // ÃÖÁ¾ÀûÀ¸·Î cpu°¡ ISRÇÔ¼ö¸¦ ½ÇÇàÇÏµµ·Ï Çã¿ë
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ cpuï¿½ï¿½ ISRï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     eru0_isr_enable();
 }
 
 void initERU_ECHO(void) {
-    // ERUÈ¸·Î ³»ºÎÀÇ ERS2È¸·Î ÀÔ·Â 4°³Áß¿¡ P00.4À» ¼±ÅÃ
+    // ERUÈ¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ERS2È¸ï¿½ï¿½ ï¿½Ô·ï¿½ 4ï¿½ï¿½ï¿½ß¿ï¿½ P00.4ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     eru0_esr2_input_sel(2);
 
     // falling edge and rise edge enable
     eru0_etl_edge_sel(1, 1);
 
-    // OGU0¸¦ »ç¿ë
+    // OGU0ï¿½ï¿½ ï¿½ï¿½ï¿½
     eru0_ogu0_enable();
 
-    // ÀÎÅÍ·´Æ® ¿ì¼±¼øÀ§ ¹× ID¼³Á¤.
-    eru0_int_config(0x0A, 0);
+    // ï¿½ï¿½ï¿½Í·ï¿½Æ® ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ IDï¿½ï¿½ï¿½ï¿½.
+    eru0_int_config(0x0A, 2);
 
-    // ÃÖÁ¾ÀûÀ¸·Î cpu°¡ ISRÇÔ¼ö¸¦ ½ÇÇàÇÏµµ·Ï Çã¿ë
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ cpuï¿½ï¿½ ISRï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     eru0_isr_enable();
 }
 
@@ -201,7 +203,7 @@ void initCCU60(void) {
     ccu60_connect_to_cpu(0x00);
 
     // setting interrupt service ID and cpu number (cpu0)
-    ccu60_int_config(0x0B, 0);
+    ccu60_int_config(0x0B, 2);
 
     // finally, start timer block.. (Run Start)
     ccu60_t12_start();

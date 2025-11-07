@@ -28,6 +28,11 @@
 #include "IfxCpu.h"
 #include "IfxScuWdt.h"
 
+unsigned int CollisionDistance_CM = 0;
+unsigned int CollisionAlert = 0;        // 0: Safe, 1: Distance below 60cm, 2: Distance below 30cm
+
+extern unsigned int range;
+extern unsigned char range_valid_flag;
 extern IfxCpu_syncEvent g_cpuSyncEvent;
 
 int core2_main(void)
@@ -45,6 +50,42 @@ int core2_main(void)
     
     while(1)
     {
+
+        swdelay(10000000);
+
+        // drive TRIG with high (P02.6)
+        p02_6_out_set();
+
+        // timer T12 start on CCU60
+        ccu60_t12_start();
+
+        // wait until receive ECHO
+        while( range_valid_flag == 0);
+
+        CollisionDistance_CM = range;
+        if (CollisionDistance_CM < 60) {
+            // The distance to the car in front is less than 60 cm.
+            CollisionAlert = 1;
+        }
+        else if (CollisionDistance_CM < 30) {
+            // The distance to the car in front is less than 30 cm.
+            CollisionAlert = 2;
+        }
+        else {
+            // 
+            CollisionAlert = 0;
+        }
+
+
+        if(        range >= 60) {
+            on_rgb_red();
+        } else if( range >= 40) {
+            on_rgb_green();
+        } else if( range >= 20) {
+            on_rgb_blue();
+        } else {
+            on_rgb_white();
+        }
     }
     return (1);
 }
