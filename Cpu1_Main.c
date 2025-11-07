@@ -24,17 +24,15 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  *********************************************************************************************************************/
-#include "Ifx_Types.h"
-#include "IfxCpu.h"
-#include "IfxScuWdt.h"
+#include "HYUNDAI_RESKILL.h"
 
 unsigned char bAccelPressed = 0;
 unsigned char bBreakPressed = 0;
 
 
-void T_1000ms(void);
-void T_100ms(void);
-void T_10ms(void);
+void CPU1_T_1000ms(void);
+void CPU1_T_100ms(void);
+void CPU1_T_10ms(void);
 
 extern IfxCpu_syncEvent g_cpuSyncEvent;
 
@@ -60,13 +58,13 @@ int core1_main(void)
     {
         if (gCnt % 10000 == 0)
         {
-            T_10ms();
+            CPU1_T_10ms();
         }if (gCnt % 100000 == 0)
         {
-            T_100ms();
+            CPU1_T_100ms();
         }if (gCnt % 1000000 == 0)
         {
-            T_1000ms();
+            CPU1_T_1000ms();
         }
         bAccelPressed = read_switch1();
         bBreakPressed = read_switch2();
@@ -76,17 +74,17 @@ int core1_main(void)
     return (1);
 }
 
-void T_1000ms(void)
+void CPU1_T_1000ms(void)
 {
     toggle_red_led();
 }
 
-void T_100ms(void)
+void CPU1_T_100ms(void)
 {
     toggle_blue_led();
 }
 
-void T_10ms(void)
+void CPU1_T_10ms(void)
 {
     
 }

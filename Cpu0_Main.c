@@ -33,6 +33,10 @@ unsigned char range_valid_flag = 0;
 extern unsigned int CollisionDistance_CM;
 extern unsigned int CollisionAlert;
 
+void CPU0_T_1000ms(void);
+void CPU0_T_100ms(void);
+void CPU0_T_10ms(void);
+
 __interrupt(0x0A) __vector_table(2)
 void ERU0_ISR(void)
 {
@@ -74,6 +78,7 @@ void CCU60_T12_ISR(void)
 
 int core0_main(void)
 {
+    unsigned int gCnt = 0;
     IfxCpu_enableInterrupts();
     
     /* !!WATCHDOG0 AND SAFETY WATCHDOG ARE DISABLED HERE!!
@@ -103,6 +108,21 @@ int core0_main(void)
 
     while(1)
     {
+        if (gCnt % 10000 == 0)
+        {
+            CPU0_T_10ms();
+        }
+        if (gCnt % 100000 == 0)
+        {
+            CPU0_T_100ms();
+        }
+        if (gCnt % 1000000 == 0)
+        {
+            CPU0_T_1000ms();
+        }
+        
+        gCnt += 1;
+
         swdelay(10000000);
 
         if (CollisionAlert == 1) {
@@ -149,6 +169,21 @@ int core0_main(void)
     }
 
     return (1);
+}
+
+void CPU0_T_1000ms(void)
+{
+    toggle_red_led();
+}
+
+void CPU0_T_100ms(void)
+{
+    toggle_blue_led();
+}
+
+void CPU0_T_10ms(void)
+{
+    
 }
 
 void initLED(void)

@@ -129,6 +129,7 @@ void          on_red_led      (void);
 void          on_blue_led     (void);
 void          off_red_led     (void);
 void          off_blue_led    (void);
+unsigned char read_switch1    (void);
 unsigned char read_switch2    (void);
 void          p02_7_out_mode  (void);
 void          p10_5_out_mode  (void);

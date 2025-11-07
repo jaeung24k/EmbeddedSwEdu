@@ -24,9 +24,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
  * IN THE SOFTWARE.
  *********************************************************************************************************************/
-#include "Ifx_Types.h"
-#include "IfxCpu.h"
-#include "IfxScuWdt.h"
+#include "HYUNDAI_RESKILL.h"
 
 unsigned int CollisionDistance_CM = 0;
 unsigned int CollisionAlert = 0;        // 0: Safe, 1: Distance below 60cm, 2: Distance below 30cm
@@ -35,8 +33,15 @@ extern unsigned int range;
 extern unsigned char range_valid_flag;
 extern IfxCpu_syncEvent g_cpuSyncEvent;
 
+void CPU2_T_1000ms(void);
+void CPU2_T_100ms(void);
+void CPU2_T_10ms(void);
+
+
 int core2_main(void)
 {
+    unsigned int gCnt = 0;
+
     IfxCpu_enableInterrupts();
     
     /* !!WATCHDOG2 IS DISABLED HERE!!
@@ -50,6 +55,20 @@ int core2_main(void)
     
     while(1)
     {
+        if (gCnt % 10000 == 0)
+        {
+            CPU2_T_10ms();
+        }
+        if (gCnt % 100000 == 0)
+        {
+            CPU2_T_100ms();
+        }
+        if (gCnt % 1000000 == 0)
+        {
+            CPU2_T_1000ms();
+        }
+        
+        gCnt += 1;
 
         swdelay(10000000);
 
@@ -88,4 +107,20 @@ int core2_main(void)
         // }
     }
     return (1);
+}
+
+
+void CPU2_T_1000ms(void)
+{
+    toggle_red_led();
+}
+
+void CPU2_T_100ms(void)
+{
+    toggle_blue_led();
+}
+
+void CPU2_T_10ms(void)
+{
+    
 }
