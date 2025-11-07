@@ -86,8 +86,8 @@ int core0_main(void)
     IfxCpu_emitEvent(&g_cpuSyncEvent);
     IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
     
-    //initLED();      // P10.1, P10.2 -> red, blue led
-    //initButton();   // P02.1 --> SW2 input
+    initLED();      // P10.1, P10.2 -> red, blue led
+    initButton();   // P02.1 --> SW2 input
     //initERU_SW2();  // P02.1 --> using external interrupt
     initCCU60();      // using CCU60's T12 timer to Call ISR on 10us
     initRGBLED();     // RGB LED drive
@@ -159,6 +159,7 @@ void initLED(void)
 
 void initButton(void)
 {
+    p02_0_in_mode();
     p02_1_in_mode();
 }
 

@@ -121,6 +121,7 @@ unsigned char read_port       (unsigned char group, unsigned char pin);
 void          p10_1_out_mode  (void);
 void          p10_1_pwm_mode  (void);
 void          p10_2_out_mode  (void);
+void          p02_0_in_mode   (void);
 void          p02_1_in_mode   (void);
 void          toggle_red_led  (void);
 void          toggle_blue_led (void);

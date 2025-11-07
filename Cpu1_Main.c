@@ -28,10 +28,23 @@
 #include "IfxCpu.h"
 #include "IfxScuWdt.h"
 
+unsigned char bAccelPressed = 0;
+unsigned char bBreakPressed = 0;
+
+
+void T_1000ms(void);
+void T_100ms(void);
+void T_10ms(void);
+
 extern IfxCpu_syncEvent g_cpuSyncEvent;
+
+extern void toggle_red_led(void);
+extern void toggle_blue_led(void);
+
 
 int core1_main(void)
 {
+    unsigned int gCnt = 0;
     IfxCpu_enableInterrupts();
     
     /* !!WATCHDOG1 IS DISABLED HERE!!
@@ -45,6 +58,35 @@ int core1_main(void)
     
     while(1)
     {
+        if (gCnt % 10000 == 0)
+        {
+            T_10ms();
+        }if (gCnt % 100000 == 0)
+        {
+            T_100ms();
+        }if (gCnt % 1000000 == 0)
+        {
+            T_1000ms();
+        }
+        bAccelPressed = read_switch1();
+        bBreakPressed = read_switch2();
+        
+        gCnt += 1;
     }
     return (1);
+}
+
+void T_1000ms(void)
+{
+    toggle_red_led();
+}
+
+void T_100ms(void)
+{
+    toggle_blue_led();
+}
+
+void T_10ms(void)
+{
+    
 }

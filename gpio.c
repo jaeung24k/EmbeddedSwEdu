@@ -31,6 +31,12 @@ void  p10_2_out_mode(void) {
   //P10_IOCR0.B.PC2 = 0x10;
 }
 
+void p02_0_in_mode(void ) {
+    // p02.1 input mode
+    P02_IOCR0.U &= ~(0x1F << PC1_BIT_LSB_IDX);
+    P02_IOCR0.U |= 0x01 << PC1_BIT_LSB_IDX;
+}
+
 void p02_1_in_mode(void ) {
     // p02.1 input mode
     P02_IOCR0.U &= ~(0x1F << PC1_BIT_LSB_IDX);
