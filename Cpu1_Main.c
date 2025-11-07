@@ -39,6 +39,8 @@ extern IfxCpu_syncEvent g_cpuSyncEvent;
 extern void toggle_red_led(void);
 extern void toggle_blue_led(void);
 
+unsigned int Speed_L = 0;
+unsigned int Speed_R = 0;
 
 int core1_main(void)
 {
@@ -66,8 +68,7 @@ int core1_main(void)
         {
             CPU1_T_1000ms();
         }
-        bAccelPressed = read_switch1();
-        bBreakPressed = read_switch2();
+        
         
         gCnt += 1;
     }
@@ -76,15 +77,49 @@ int core1_main(void)
 
 void CPU1_T_1000ms(void)
 {
-    toggle_red_led();
+    if (Speed_L >= 500 && Speed_R >= 500)
+    {
+        on_red_led(); 
+        off_blue_led();
+    }
+    else if (Speed_L >= 300 && Speed_R >= 300)
+    { 
+        off_red_led(); 
+        on_blue_led();
+    }
+    else
+    {
+        off_blue_led();
+        off_red_led();
+    }
 }
 
 void CPU1_T_100ms(void)
 {
-    toggle_blue_led();
+    if (bBreakPressed == 1)
+    {
+        if (Speed_L != 0)
+            Speed_L -= 1;
+        if (Speed_R != 0)
+            Speed_R -= 1;
+    }
+    if (bAccelPressed == 1)
+    {
+        if (Speed_L > 1000)
+            Speed_L = 1000;
+        else
+            Speed_L += 1;
+
+        if (Speed_R > 1000)
+            Speed_R = 1000;
+        else
+            Speed_R += 1;
+    }
+
 }
 
 void CPU1_T_10ms(void)
 {
-    
+    bAccelPressed = read_switch1();
+    bBreakPressed = read_switch2();
 }
