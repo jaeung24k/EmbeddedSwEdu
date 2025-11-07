@@ -151,12 +151,12 @@ int core0_main(void)
 
 void CPU0_T_1000ms(void)
 {
-    blinkRGBLED();
+    // blinkRGBLED();
 }
 
 void CPU0_T_100ms(void)
 {
-
+blinkRGBLED();
 }
 
 void CPU0_T_10ms(void)

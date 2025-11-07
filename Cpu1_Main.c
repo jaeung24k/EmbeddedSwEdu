@@ -40,6 +40,7 @@ extern void toggle_red_led(void);
 extern void toggle_blue_led(void);
 extern void CalculateCarSpeed(void);
 extern void ReadSteeringAngle(void);
+extern void BlinkLedLR(void);
 
 unsigned int Speed_L = 0;
 unsigned int Speed_R = 0;
@@ -82,27 +83,30 @@ int core1_main(void)
 
 void CPU1_T_1000ms(void)
 {
-    if (Speed_L >= 500 && Speed_R >= 500)
-    {
-        on_red_led(); 
-        off_blue_led();
-    }
-    else if (Speed_L >= 300 && Speed_R >= 300)
-    { 
-        off_red_led(); 
-        on_blue_led();
-    }
-    else
-    {
-        off_blue_led();
-        off_red_led();
-    }
+    // if (Speed_L >= 500 && Speed_R >= 500)
+    // {
+    //     on_red_led(); 
+    //     off_blue_led();
+    // }
+    // else if (Speed_L >= 300 && Speed_R >= 300)
+    // { 
+    //     off_red_led(); 
+    //     on_blue_led();
+    // }
+    // else
+    // {
+    //     off_blue_led();
+    //     off_red_led();
+    // }
+
+    BlinkLedLR();
 }
 
 void CPU1_T_100ms(void)
 {
     ReadSteeringAngle();
     CalculateCarSpeed();
+    BlinkLedLR();
 }
 
 void CPU1_T_10ms(void)
@@ -160,4 +164,26 @@ void ReadSteeringAngle(void)
         
         SteeringAngle = (((adc_data) * 60) / 1400);
     }
+}
+
+void BlinkLedLR(void)
+{
+    if (SteeringAngle >= 0 && SteeringAngle <= 25) {
+        static unsigned int cnt_1 = 0;
+        off_blue_led();
+        if (cnt_1 % 10 < 5)
+            on_red_led();
+        else
+            off_red_led();
+        cnt_1++;
+    }
+    else if (SteeringAngle >= 40 && SteeringAngle <= 60) {
+        static unsigned int cnt_2 = 0;
+        off_red_led();
+        if (cnt_2 % 10 < 5)
+            on_blue_led();
+        else
+            off_blue_led();
+        cnt_2++;
+    }  
 }
